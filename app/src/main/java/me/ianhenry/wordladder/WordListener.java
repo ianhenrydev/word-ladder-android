@@ -7,13 +7,19 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
+import me.ianhenry.wordladder.events.WordResultListener;
+
 /**
  * Created by ianhe on 2/22/2017.
  */
 
 public class WordListener implements RecognitionListener {
     private final String TAG = getClass().getName();
+    private WordResultListener listener;
 
+    public WordListener(WordResultListener listener) {
+        this.listener = listener;
+    }
     public void onReadyForSpeech(Bundle params)
     {
         Log.d(TAG, "onReadyForSpeech");
@@ -43,11 +49,7 @@ public class WordListener implements RecognitionListener {
         String str = new String();
         Log.d(TAG, "onResults " + results);
         ArrayList data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        for (int i = 0; i < data.size(); i++)
-        {
-            Log.d(TAG, "result " + data.get(i));
-            str += data.get(i);
-        }
+        listener.onWordResult(data.get(0).toString());
     }
     public void onPartialResults(Bundle partialResults)
     {
