@@ -6,4 +6,5 @@ package me.ianhenry.wordladder.events;
 
 public interface WordResultListener {
     void onWordResult(String word);
+    void onError();
 }

@@ -43,6 +43,7 @@ public class WordListener implements RecognitionListener {
     public void onError(int error)
     {
         Log.d(TAG,  "error " +  error);
+        listener.onError();
     }
     public void onResults(Bundle results)
     {
