@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +13,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import java.util.Locale;
 
 import me.ianhenry.wordladder.events.WordResultListener;
 
@@ -22,6 +25,8 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private Intent wordIntent;
     private TextView textView;
     private RelativeLayout layout;
+    private Boolean listening = false;
+    private TextToSpeech speaker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,17 +36,31 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         layout = (RelativeLayout)findViewById(R.id.activity_main);
         textView = (TextView)findViewById(R.id.textView);
 
+        initSpeaker();
         checkForPermissions();
     }
 
     @Override
     public void onWordResult(String word) {
         textView.setText(word);
+        listening = false;
     }
 
     @Override
     public void onError() {
         textView.setText("error");
+        listening = false;
+    }
+
+    private void initSpeaker() {
+        speaker = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                speaker.setLanguage(Locale.US);
+                speaker.setSpeechRate(0.75f);
+                speaker.speak("word, w o r d", TextToSpeech.QUEUE_FLUSH, null, null);
+            }
+        });
     }
 
     private void initSpeechRecognizer() {
@@ -57,7 +76,10 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                recognizer.startListening(wordIntent);
+                if (!listening) {
+                    recognizer.startListening(wordIntent);
+                    listening = true;
+                }
             }
         });
     }
