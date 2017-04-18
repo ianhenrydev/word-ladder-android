@@ -3,6 +3,8 @@ package me.ianhenry.wordladder;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.SQLException;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
@@ -10,10 +12,12 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.Locale;
 
 import me.ianhenry.wordladder.events.WordResultListener;
@@ -27,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private RelativeLayout layout;
     private Boolean listening = false;
     private TextToSpeech speaker;
+    private WordDatabaseHelper wordDatabaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +41,39 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         layout = (RelativeLayout)findViewById(R.id.activity_main);
         textView = (TextView)findViewById(R.id.textView);
 
+        initDB();
+
+        Cursor cursor = wordDatabaseHelper.getSolutions("car");
+        Log.d("Num results", cursor.getCount()+"");
+        while (cursor.moveToNext()) {
+            Log.d("Num results", cursor.getString(0));
+        }
+
         //initSpeaker();
         checkForPermissions();
+    }
+
+    private void initDB() {
+        wordDatabaseHelper = new WordDatabaseHelper(this);
+        try {
+
+            wordDatabaseHelper.createDataBase();
+
+        } catch (IOException ioe) {
+
+            throw new Error("Unable to create database");
+
+        }
+
+        try {
+
+            wordDatabaseHelper.openDataBase();
+
+        } catch (SQLException sqle) {
+
+            throw sqle;
+
+        }
     }
 
     @Override
@@ -109,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
             case PERMISSION_REQUEST_AUDIO: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    initSpeechRecognizer();
+                    //initSpeechRecognizer();
                 } else {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
