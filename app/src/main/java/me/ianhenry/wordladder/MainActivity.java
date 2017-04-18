@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         layout = (RelativeLayout)findViewById(R.id.activity_main);
         textView = (TextView)findViewById(R.id.textView);
 
-        initSpeaker();
+        //initSpeaker();
         checkForPermissions();
     }
 
