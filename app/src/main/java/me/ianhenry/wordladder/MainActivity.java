@@ -10,9 +10,12 @@ import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -23,7 +26,7 @@ import java.util.Locale;
 
 import me.ianhenry.wordladder.events.WordResultListener;
 
-public class MainActivity extends AppCompatActivity implements WordResultListener {
+public class MainActivity extends AppCompatActivity implements WordResultListener, GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener{
 
     private SpeechRecognizer recognizer;
     private final int PERMISSION_REQUEST_AUDIO = 26;
@@ -38,11 +41,17 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private Cursor resultCursor;
     private int score;
     private ArrayList<String> solutions;
+    private GestureDetectorCompat mDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        initSpeaker();
+
+        mDetector = new GestureDetectorCompat(this,this);
+        mDetector.setOnDoubleTapListener(this);
 
         layout = (RelativeLayout)findViewById(R.id.activity_main);
         textView = (TextView)findViewById(R.id.textView);
@@ -52,15 +61,15 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         initDB();
 
         score = 0;
+    }
 
+    private void newWord() {
         Cursor randoCursor = wordDatabaseHelper.getRandoWord(3);
         randoCursor.moveToFirst();
         String randoWord = randoCursor.getString(0);
         textView.setText(randoWord.toUpperCase());
         getSolutions(randoWord);
-
-        initSpeaker();
-        checkForPermissions();
+        speakPrompt(randoWord);
     }
 
     private void initDB() {
@@ -122,8 +131,8 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     }
 
     private void speakPrompt(String word) {
-        String longWord = word.replace("", ",");
-        speaker.speak(word + "," + longWord, TextToSpeech.QUEUE_FLUSH, null, null);
+        String longWord = word.replace("", "... ");
+        speaker.speak(word + ": " + longWord, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
     private void initSpeaker() {
@@ -131,9 +140,9 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
             @Override
             public void onInit(int status) {
                 speaker.setLanguage(Locale.US);
-                speaker.setSpeechRate(0.80f);
-                speakPrompt(textView.getText().toString());
-
+                speaker.setSpeechRate(0.70f);
+                newWord();
+                checkForPermissions();
             }
         });
     }
@@ -148,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         wordIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 50);
         wordIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
 
-        layout.setOnClickListener(new View.OnClickListener() {
+        /*layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!listening) {
@@ -156,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
                     listening = true;
                 }
             }
-        });
+        });*/
     }
 
     private void checkForPermissions() {
@@ -192,5 +201,62 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
                 return;
             }
         }
+    }
+
+    @Override
+    public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
+        if (!listening) {
+            recognizer.startListening(wordIntent);
+            listening = true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onDoubleTap(MotionEvent motionEvent) {
+        newWord();
+        return false;
+    }
+
+    @Override
+    public boolean onDoubleTapEvent(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public boolean onDown(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        return false;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event){
+        this.mDetector.onTouchEvent(event);
+        // Be sure to call the superclass implementation
+        return super.onTouchEvent(event);
     }
 }
