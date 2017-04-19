@@ -155,6 +155,10 @@ public class WordDatabaseHelper extends SQLiteOpenHelper {
     // You could return cursors by doing "return myDataBase.query(....)" so it'd be easy
     // to you to create adapters for your views.
 
+    public Cursor getRandoWord(int numChars) {
+        return myDataBase.query("words", null, " LENGTH(word) = "+numChars+" ORDER BY RANDOM() LIMIT 1", null, null, null, null);
+    }
+
     public Cursor getSolutions(String word) {
         String likeClause = " (";
         for (int i = 0; i < word.length(); i++) {

@@ -18,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Locale;
 
 import me.ianhenry.wordladder.events.WordResultListener;
@@ -28,10 +29,15 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private final int PERMISSION_REQUEST_AUDIO = 26;
     private Intent wordIntent;
     private TextView textView;
+    private TextView debugText;
+    private TextView scoreText;
     private RelativeLayout layout;
     private Boolean listening = false;
     private TextToSpeech speaker;
     private WordDatabaseHelper wordDatabaseHelper;
+    private Cursor resultCursor;
+    private int score;
+    private ArrayList<String> solutions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,16 +46,20 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
         layout = (RelativeLayout)findViewById(R.id.activity_main);
         textView = (TextView)findViewById(R.id.textView);
+        debugText = (TextView)findViewById(R.id.debugText);
+        scoreText = (TextView)findViewById(R.id.scoreText);
 
         initDB();
 
-        Cursor cursor = wordDatabaseHelper.getSolutions("car");
-        Log.d("Num results", cursor.getCount()+"");
-        while (cursor.moveToNext()) {
-            Log.d("Num results", cursor.getString(0));
-        }
+        score = 0;
 
-        //initSpeaker();
+        Cursor randoCursor = wordDatabaseHelper.getRandoWord(3);
+        randoCursor.moveToFirst();
+        String randoWord = randoCursor.getString(0);
+        textView.setText(randoWord.toUpperCase());
+        getSolutions(randoWord);
+
+        initSpeaker();
         checkForPermissions();
     }
 
@@ -76,16 +86,44 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         }
     }
 
+    private void getSolutions(String word) {
+        resultCursor = wordDatabaseHelper.getSolutions(word);
+        Log.d("Num results", resultCursor.getCount()+"");
+        while (resultCursor.moveToNext()) {
+            Log.d("Num results", resultCursor.getString(0));
+        }
+    }
+
+    private void increaseScore() {
+        score++;
+        scoreText.setText(""+score);
+    }
+
     @Override
     public void onWordResult(String word) {
-        textView.setText(word);
+        debugText.setText(word.toUpperCase());
+        resultCursor.moveToFirst();
+        while (resultCursor.moveToNext()) {
+            if (word.equals(resultCursor.getString(0))) {
+                Log.d("Correct", word);
+                speakPrompt(word);
+                increaseScore();
+                textView.setText(word.toUpperCase());
+                getSolutions(word);
+            }
+        }
         listening = false;
     }
 
     @Override
     public void onError() {
-        textView.setText("error");
+        debugText.setText("error");
         listening = false;
+    }
+
+    private void speakPrompt(String word) {
+        String longWord = word.replace("", ",");
+        speaker.speak(word + "," + longWord, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
     private void initSpeaker() {
@@ -93,8 +131,9 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
             @Override
             public void onInit(int status) {
                 speaker.setLanguage(Locale.US);
-                speaker.setSpeechRate(0.75f);
-                speaker.speak("word, w o r d", TextToSpeech.QUEUE_FLUSH, null, null);
+                speaker.setSpeechRate(0.80f);
+                speakPrompt(textView.getText().toString());
+
             }
         });
     }
@@ -145,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
             case PERMISSION_REQUEST_AUDIO: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //initSpeechRecognizer();
+                    initSpeechRecognizer();
                 } else {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
