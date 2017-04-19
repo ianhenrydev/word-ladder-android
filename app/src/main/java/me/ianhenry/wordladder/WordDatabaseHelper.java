@@ -21,7 +21,7 @@ public class WordDatabaseHelper extends SQLiteOpenHelper {
     //The Android's default system path of your application database.
     private static String DB_PATH = "/data/data/me.ianhenry.wordladder/databases/";
 
-    private static String DB_NAME = "words.db";
+    private static String DB_NAME = "dictionary.db";
 
     private SQLiteDatabase myDataBase;
 

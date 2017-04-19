@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         debugText.setText(word.toUpperCase());
         resultCursor.moveToFirst();
         while (resultCursor.moveToNext()) {
-            if (word.equals(resultCursor.getString(0))) {
+            if (word.toUpperCase().equals(resultCursor.getString(0))) {
                 Log.d("Correct", word);
                 speakPrompt(word);
                 increaseScore();
@@ -156,16 +156,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         wordIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, this.getPackageName());
         wordIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 50);
         wordIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
-
-        /*layout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!listening) {
-                    recognizer.startListening(wordIntent);
-                    listening = true;
-                }
-            }
-        });*/
     }
 
     private void checkForPermissions() {
