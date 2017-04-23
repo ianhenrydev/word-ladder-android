@@ -50,7 +50,8 @@ public class WordListener implements RecognitionListener {
         String str = new String();
         Log.d(TAG, "onResults " + results);
         ArrayList data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        listener.onWordResult(data.get(0).toString());
+        String[] array = (String[])data.toArray(new String[data.size()]);
+        listener.onWordResult(array);
     }
     public void onPartialResults(Bundle partialResults)
     {

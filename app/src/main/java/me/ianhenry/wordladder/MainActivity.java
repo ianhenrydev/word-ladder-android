@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     }
 
     private void newWord() {
-        Cursor randoCursor = wordDatabaseHelper.getRandoWord(3);
+        Cursor randoCursor = wordDatabaseHelper.getRandoWord(4);
         randoCursor.moveToFirst();
         String randoWord = randoCursor.getString(0);
         textView.setText(randoWord.toUpperCase());
@@ -109,18 +109,24 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     }
 
     @Override
-    public void onWordResult(String word) {
-        debugText.setText(word.toUpperCase());
+    public void onWordResult(String[] words) {
         resultCursor.moveToFirst();
-        while (resultCursor.moveToNext()) {
-            if (word.toUpperCase().equals(resultCursor.getString(0))) {
-                Log.d("Correct", word);
-                speakPrompt(word);
-                increaseScore();
-                textView.setText(word.toUpperCase());
-                getSolutions(word);
+        String debug = "";
+        outerloop:
+        for (String word : words) {
+            debug += word + ",";
+            while (resultCursor.moveToNext()) {
+                if (word.toUpperCase().equals(resultCursor.getString(0).toUpperCase())) {
+                    Log.d("Correct", word);
+                    speakPrompt(word);
+                    increaseScore();
+                    textView.setText(word.toUpperCase());
+                    getSolutions(word);
+                    break outerloop;
+                }
             }
         }
+        debugText.setText(debug);
         listening = false;
     }
 
