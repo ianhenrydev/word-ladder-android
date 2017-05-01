@@ -3,8 +3,12 @@ package me.ianhenry.wordladder;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Environment;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
@@ -42,6 +46,9 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private int score;
     private ArrayList<String> solutions;
     private GestureDetectorCompat mDetector;
+    private MediaPlayer mediaPlayer;
+    private Status STATUS;
+    private int difficulty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         setContentView(R.layout.activity_main);
 
         initSpeaker();
+        checkForPermissions();
+
 
         mDetector = new GestureDetectorCompat(this,this);
         mDetector.setOnDoubleTapListener(this);
@@ -59,12 +68,35 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         scoreText = (TextView)findViewById(R.id.scoreText);
 
         initDB();
+        createMainMenu();
 
         score = 0;
     }
 
+    private enum Status {
+        MAIN_MENU, DIFFICULTY, GAME
+    }
+
+    private void createMainMenu() {
+        STATUS = Status.MAIN_MENU;
+        playSound("Welcome");
+    }
+
+    private void playSound(String sound) {
+        try {
+            AssetFileDescriptor descriptor = getAssets().openFd("sounds/"+sound+".mp3");
+            mediaPlayer = new  MediaPlayer();
+            mediaPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
+            descriptor.close();
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void newWord() {
-        Cursor randoCursor = wordDatabaseHelper.getRandoWord(4);
+        Cursor randoCursor = wordDatabaseHelper.getRandoWord(difficulty);
         randoCursor.moveToFirst();
         String randoWord = randoCursor.getString(0);
         textView.setText(randoWord.toUpperCase());
@@ -110,6 +142,59 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
     @Override
     public void onWordResult(String[] words) {
+        switch (STATUS) {
+            case MAIN_MENU:
+                menuWordResult(words);
+                break;
+            case DIFFICULTY:
+                difficultyWordResult(words);
+                break;
+            case GAME:
+                gameWordResult(words);
+                break;
+        }
+    }
+    private void menuWordResult(String[] words) {
+        for (String word : words) {
+           switch (word.toUpperCase()) {
+               case "PLAY":
+                   playSound("SelectDifficulty");
+                   STATUS = Status.DIFFICULTY;
+                   break;
+               case "TUTORIAL":
+                   playSound("TutorialReadOut");
+                   break;
+               case "LEADERBOARD":
+                   playSound("1stPlace");
+                   break;
+           }
+        }
+        listening = false;
+    }
+    private void difficultyWordResult(String[] words) {
+        for (String word : words) {
+            switch (word.toUpperCase()) {
+                case "EASY":
+                    difficulty = 3;
+                    newWord();
+                    STATUS = Status.GAME;
+                    break;
+                case "MEDIUM":
+                    difficulty = 4;
+                    newWord();
+                    STATUS = Status.GAME;
+                    break;
+                case "HARD":
+                    difficulty = 5;
+                    newWord();
+                    STATUS = Status.GAME;
+                    break;
+            }
+        }
+        listening = false;
+    }
+
+    private void gameWordResult(String[] words) {
         resultCursor.moveToFirst();
         String debug = "";
         outerloop:
@@ -147,8 +232,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
             public void onInit(int status) {
                 speaker.setLanguage(Locale.US);
                 speaker.setSpeechRate(0.70f);
-                newWord();
-                checkForPermissions();
             }
         });
     }
@@ -202,6 +285,8 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     @Override
     public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
         if (!listening) {
+            if (mediaPlayer.isPlaying())
+                mediaPlayer.stop();
             recognizer.startListening(wordIntent);
             listening = true;
         }
