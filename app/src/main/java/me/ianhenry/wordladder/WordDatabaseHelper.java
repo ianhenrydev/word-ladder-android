@@ -21,7 +21,7 @@ public class WordDatabaseHelper extends SQLiteOpenHelper {
     //The Android's default system path of your application database.
     private static String DB_PATH = "/data/data/me.ianhenry.wordladder/databases/";
 
-    private static String DB_NAME = "dictionary.db";
+    private static String DB_NAME = "dictionary_friendly.db";
 
     private SQLiteDatabase myDataBase;
 
@@ -156,7 +156,7 @@ public class WordDatabaseHelper extends SQLiteOpenHelper {
     // to you to create adapters for your views.
 
     public Cursor getRandoWord(int numChars) {
-        return myDataBase.query("words", null, " LENGTH(word) = "+numChars+" ORDER BY RANDOM() LIMIT 1", null, null, null, null);
+        return myDataBase.rawQuery("SELECT * FROM words WHERE LENGTH(word) = "+numChars+" AND friendly = 1 ORDER BY RANDOM() LIMIT 1", null);
     }
 
     public Cursor getSolutions(String word) {
