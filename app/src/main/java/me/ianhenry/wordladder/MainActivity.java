@@ -128,10 +128,11 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     }
 
     private void getSolutions(String word) {
+        solutions = new ArrayList<>();
         resultCursor = wordDatabaseHelper.getSolutions(word);
         Log.d("Num results", resultCursor.getCount()+"");
         while (resultCursor.moveToNext()) {
-            Log.d("Num results", resultCursor.getString(0));
+            solutions.add(resultCursor.getString(0));
         }
     }
 
@@ -181,12 +182,12 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
                     break;
                 case "MEDIUM":
                     difficulty = 4;
-                    newWord();
+                    playSound("YourFirstWord", yourWordIsCompletion);
                     STATUS = Status.GAME;
                     break;
                 case "HARD":
                     difficulty = 5;
-                    newWord();
+                    playSound("YourFirstWord", yourWordIsCompletion);
                     STATUS = Status.GAME;
                     break;
             }
@@ -202,14 +203,13 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     };
 
     private void gameWordResult(String[] words) {
-        resultCursor.moveToFirst();
         String debug = "";
         boolean correct = false;
         outerloop:
         for (String word : words) {
             debug += word + ",";
-            while (resultCursor.moveToNext()) {
-                if (word.toUpperCase().equals(resultCursor.getString(0).toUpperCase())) {
+            for (String solution : solutions) {
+                if (word.toUpperCase().equals(solution.toUpperCase())) {
                     Log.d("Correct", word);
                     playSound("Correct", correctCompletion);
                     correct = true;
@@ -236,6 +236,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
     @Override
     public void onError() {
+        playSound("PleaseRepeat", null);
         debugText.setText("error");
         listening = false;
     }
