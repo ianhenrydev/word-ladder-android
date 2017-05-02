@@ -11,11 +11,16 @@
     tools:context="me.ianhenry.wordladder.MainActivity">
 
     <TextView
+        android:id="@+id/timeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:textSize="36sp" />
+    <TextView
         android:id="@+id/scoreText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:text="0"
         android:textSize="36sp" />
 
     <TextView
@@ -23,6 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal"
         android:textSize="36sp" />
 
     <TextView

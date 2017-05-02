@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private TextView textView;
     private TextView debugText;
     private TextView scoreText;
+    private TextView timeText;
     private RelativeLayout layout;
     private Boolean listening = false;
     private TextToSpeech speaker;
@@ -66,6 +67,9 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         textView = (TextView)findViewById(R.id.textView);
         debugText = (TextView)findViewById(R.id.debugText);
         scoreText = (TextView)findViewById(R.id.scoreText);
+        timeText = (TextView)findViewById(R.id.timeText);
+        textView.setText("Main Menu\n\nPlay\n\nTutorial\n\nLeaderboard");
+
 
         initDB();
         createMainMenu();
@@ -162,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
            switch (word.toUpperCase()) {
                case "PLAY":
                    playSound("SelectDifficulty", null);
+                   textView.setText("Select Difficulty\n\nEasy\n\nMedium\n\nHard");
                    STATUS = Status.DIFFICULTY;
                    break;
                case "TUTORIAL":
@@ -193,11 +198,13 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
     private void startGame(int diff) {
         difficulty = diff;
+        textView.setText("");
         playSound("YourFirstWord", yourWordIsCompletion);
         STATUS = Status.GAME;
-        countDownTimer = new CountDownTimer(30000, 1000) {
+        countDownTimer = new CountDownTimer(60000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
+                timeText.setText((millisUntilFinished/1000)+"");
                 if (millisUntilFinished <= 10000) {
                     playSound("tick", null);
                 }
@@ -215,6 +222,11 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         public void onCompletion(MediaPlayer mediaPlayer) {
             speakScore();
             STATUS = Status.MAIN_MENU;
+            score = 0;
+            textView.setText("Main Menu\n\nPlay\n\nTutorial\n\nLeaderboard");
+            scoreText.setText("");
+            timeText.setText("");
+            debugText.setText("");
         }
     };
 
