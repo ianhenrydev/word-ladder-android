@@ -7,8 +7,7 @@ import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.Environment;
+import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
@@ -16,11 +15,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -49,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private MediaPlayer mediaPlayer;
     private Status STATUS;
     private int difficulty;
+    private String correctWord;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,16 +77,18 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
     private void createMainMenu() {
         STATUS = Status.MAIN_MENU;
-        playSound("Welcome");
+        playSound("Welcome", null);
     }
 
-    private void playSound(String sound) {
+    private void playSound(String sound, MediaPlayer.OnCompletionListener listener) {
         try {
             AssetFileDescriptor descriptor = getAssets().openFd("sounds/"+sound+".mp3");
             mediaPlayer = new  MediaPlayer();
             mediaPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
             descriptor.close();
             mediaPlayer.prepare();
+            if (listener != null)
+                mediaPlayer.setOnCompletionListener(listener);
             mediaPlayer.start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -158,14 +158,14 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         for (String word : words) {
            switch (word.toUpperCase()) {
                case "PLAY":
-                   playSound("SelectDifficulty");
+                   playSound("SelectDifficulty", null);
                    STATUS = Status.DIFFICULTY;
                    break;
                case "TUTORIAL":
-                   playSound("TutorialReadOut");
+                   playSound("TutorialReadOut", null);
                    break;
                case "LEADERBOARD":
-                   playSound("1stPlace");
+                   playSound("1stPlace", null);
                    break;
            }
         }
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
             switch (word.toUpperCase()) {
                 case "EASY":
                     difficulty = 3;
-                    newWord();
+                    playSound("YourFirstWord", yourWordIsCompletion);
                     STATUS = Status.GAME;
                     break;
                 case "MEDIUM":
@@ -194,16 +194,26 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         listening = false;
     }
 
+    private MediaPlayer.OnCompletionListener yourWordIsCompletion = new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
+            newWord();
+        }
+    };
+
     private void gameWordResult(String[] words) {
         resultCursor.moveToFirst();
         String debug = "";
+        boolean correct = false;
         outerloop:
         for (String word : words) {
             debug += word + ",";
             while (resultCursor.moveToNext()) {
                 if (word.toUpperCase().equals(resultCursor.getString(0).toUpperCase())) {
                     Log.d("Correct", word);
-                    speakPrompt(word);
+                    playSound("Correct", correctCompletion);
+                    correct = true;
+                    correctWord = word;
                     increaseScore();
                     textView.setText(word.toUpperCase());
                     getSolutions(word);
@@ -211,9 +221,18 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
                 }
             }
         }
+        if (!correct)
+            playSound("Incorrect", null);
         debugText.setText(debug);
         listening = false;
     }
+
+    private MediaPlayer.OnCompletionListener correctCompletion = new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
+            speakPrompt(correctWord);
+        }
+    };
 
     @Override
     public void onError() {
