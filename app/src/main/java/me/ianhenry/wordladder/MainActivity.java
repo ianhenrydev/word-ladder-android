@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private Status STATUS;
     private int difficulty;
     private String correctWord;
+    private CountDownTimer countDownTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,24 +178,45 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         for (String word : words) {
             switch (word.toUpperCase()) {
                 case "EASY":
-                    difficulty = 3;
-                    playSound("YourFirstWord", yourWordIsCompletion);
-                    STATUS = Status.GAME;
+                    startGame(3);
                     break;
                 case "MEDIUM":
-                    difficulty = 4;
-                    playSound("YourFirstWord", yourWordIsCompletion);
-                    STATUS = Status.GAME;
+                    startGame(4);
                     break;
                 case "HARD":
-                    difficulty = 5;
-                    playSound("YourFirstWord", yourWordIsCompletion);
-                    STATUS = Status.GAME;
+                    startGame(5);
                     break;
             }
         }
         listening = false;
     }
+
+    private void startGame(int diff) {
+        difficulty = diff;
+        playSound("YourFirstWord", yourWordIsCompletion);
+        STATUS = Status.GAME;
+        countDownTimer = new CountDownTimer(30000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if (millisUntilFinished <= 10000) {
+                    playSound("tick", null);
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                playSound("GameOver", gameOverComplete);
+            }
+        }.start();
+    }
+
+    private MediaPlayer.OnCompletionListener gameOverComplete = new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
+            speakScore();
+            STATUS = Status.MAIN_MENU;
+        }
+    };
 
     private MediaPlayer.OnCompletionListener yourWordIsCompletion = new MediaPlayer.OnCompletionListener() {
         @Override
@@ -244,6 +267,10 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private void speakPrompt(String word) {
         String longWord = word.replace("", "... ");
         speaker.speak(word + ": " + longWord, TextToSpeech.QUEUE_FLUSH, null, null);
+    }
+
+    private void speakScore() {
+        speaker.speak(score+"", TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
     private void initSpeaker() {
@@ -315,7 +342,16 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
     @Override
     public boolean onDoubleTap(MotionEvent motionEvent) {
-        newWord();
+        switch (STATUS) {
+            case MAIN_MENU:
+                if (mediaPlayer.isPlaying())
+                    mediaPlayer.stop();
+                startGame(3);
+                break;
+            case GAME:
+                newWord();
+                break;
+        }
         return false;
     }
 
