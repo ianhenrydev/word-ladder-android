@@ -1,7 +1,9 @@
 package me.ianhenry.wordladder;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
@@ -178,7 +180,13 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
                    playSound("TutorialReadOut", null);
                    break;
                case "LEADERBOARD":
-                   playSound("1stPlace", null);
+                   playSound("1stPlace", new MediaPlayer.OnCompletionListener() {
+                       @Override
+                       public void onCompletion(MediaPlayer mediaPlayer) {
+                           SharedPreferences sp = getSharedPreferences("prefs", Activity.MODE_PRIVATE);
+                           speak(sp.getInt("high_score", 0) + " points");
+                       }
+                   });
                    break;
            }
         }
@@ -211,6 +219,12 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private MediaPlayer.OnCompletionListener gameOverComplete = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
+            SharedPreferences sp = getSharedPreferences("prefs", Activity.MODE_PRIVATE);
+            if (score > sp.getInt("high_score", 0)) {
+                SharedPreferences.Editor editor = sp.edit();
+                editor.putInt("high_score", score);
+                editor.commit();
+            }
             speakScore();
             new CountDownTimer(1000, 1000) {
                 @Override
@@ -302,6 +316,10 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
     private void speakScore() {
         speaker.speak(score+"", TextToSpeech.QUEUE_FLUSH, null, null);
+    }
+
+    private void speak(String text) {
+        speaker.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
     private void initSpeaker() {
