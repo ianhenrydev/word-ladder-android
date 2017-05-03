@@ -12,6 +12,7 @@ import android.os.CountDownTimer;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GestureDetectorCompat;
@@ -28,7 +29,7 @@ import java.util.Locale;
 
 import me.ianhenry.wordladder.events.WordResultListener;
 
-public class MainActivity extends AppCompatActivity implements WordResultListener, GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener{
+public class MainActivity extends AppCompatActivity implements WordResultListener, GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
 
     private SpeechRecognizer recognizer;
     private final int PERMISSION_REQUEST_AUDIO = 26;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private int difficulty;
     private String correctWord;
     private CountDownTimer countDownTimer;
+    private ArrayList<String> alreadyAnswered;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         scoreText = (TextView)findViewById(R.id.scoreText);
         timeText = (TextView)findViewById(R.id.timeText);
         textView.setText("Main Menu\n\nPlay\n\nTutorial\n\nLeaderboard");
+
+        alreadyAnswered = new ArrayList<>();
 
 
         initDB();
@@ -108,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         textView.setText(randoWord.toUpperCase());
         getSolutions(randoWord);
         speakPrompt(randoWord);
+        alreadyAnswered.add(randoWord.toUpperCase());
     }
 
     private void initDB() {
@@ -201,32 +206,29 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         textView.setText("");
         playSound("YourFirstWord", yourWordIsCompletion);
         STATUS = Status.GAME;
-        countDownTimer = new CountDownTimer(60000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                timeText.setText((millisUntilFinished/1000)+"");
-                if (millisUntilFinished <= 10000) {
-                    playSound("tick", null);
-                }
-            }
-
-            @Override
-            public void onFinish() {
-                playSound("GameOver", gameOverComplete);
-            }
-        }.start();
     }
 
     private MediaPlayer.OnCompletionListener gameOverComplete = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
             speakScore();
-            STATUS = Status.MAIN_MENU;
-            score = 0;
-            textView.setText("Main Menu\n\nPlay\n\nTutorial\n\nLeaderboard");
-            scoreText.setText("");
-            timeText.setText("");
-            debugText.setText("");
+            new CountDownTimer(1000, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+
+                }
+
+                @Override
+                public void onFinish() {
+                    STATUS = Status.MAIN_MENU;
+                    score = 0;
+                    textView.setText("Main Menu\n\nPlay\n\nTutorial\n\nLeaderboard");
+                    scoreText.setText("");
+                    timeText.setText("");
+                    debugText.setText("");
+                    playSound("Welcome", null);
+                }
+            }.start();
         }
     };
 
@@ -234,6 +236,20 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
             newWord();
+            countDownTimer = new CountDownTimer(60000, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    timeText.setText((millisUntilFinished/1000)+"");
+                    if (millisUntilFinished <= 10000) {
+                        playSound("tick", null);
+                    }
+                }
+
+                @Override
+                public void onFinish() {
+                    playSound("GameOver", gameOverComplete);
+                }
+            }.start();
         }
     };
 
@@ -245,14 +261,17 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
             debug += word + ",";
             for (String solution : solutions) {
                 if (word.toUpperCase().equals(solution.toUpperCase())) {
-                    Log.d("Correct", word);
-                    playSound("Correct", correctCompletion);
-                    correct = true;
-                    correctWord = word;
-                    increaseScore();
-                    textView.setText(word.toUpperCase());
-                    getSolutions(word);
-                    break outerloop;
+                    if (!alreadyAnswered.contains(word.toUpperCase())) {
+                        alreadyAnswered.add(word.toUpperCase());
+                        Log.d("Correct", word);
+                        playSound("Correct", correctCompletion);
+                        correct = true;
+                        correctWord = word;
+                        increaseScore();
+                        textView.setText(word.toUpperCase());
+                        getSolutions(word);
+                        break outerloop;
+                    }
                 }
             }
         }
