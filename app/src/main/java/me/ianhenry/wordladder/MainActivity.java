@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private String correctWord;
     private CountDownTimer countDownTimer;
     private ArrayList<String> alreadyAnswered;
+    private boolean endGame = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -248,22 +249,28 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
     private MediaPlayer.OnCompletionListener yourWordIsCompletion = new MediaPlayer.OnCompletionListener() {
         @Override
-        public void onCompletion(MediaPlayer mediaPlayer) {
+        public void onCompletion(final MediaPlayer mediaPlayer) {
             newWord();
-            countDownTimer = new CountDownTimer(60000, 1000) {
+            /*countDownTimer = new CountDownTimer(60000, 1000) {
                 @Override
                 public void onTick(long millisUntilFinished) {
                     timeText.setText((millisUntilFinished/1000)+"");
-                    if (millisUntilFinished <= 10000) {
+                    if (millisUntilFinished <= 10000 && millisUntilFinished > 1000) {
                         playSound("tick", null);
                     }
                 }
 
                 @Override
                 public void onFinish() {
+                    if (speaker.isSpeaking())
+                        speaker.stop();
+                    if (mediaPlayer.isPlaying())
+                        mediaPlayer.stop();
+                    if (listening)
+                        recognizer.stopListening();
                     playSound("GameOver", gameOverComplete);
                 }
-            }.start();
+            }.start();*/
         }
     };
 
@@ -380,6 +387,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
+
         if (!listening) {
             if (mediaPlayer.isPlaying())
                 mediaPlayer.stop();
@@ -398,6 +406,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
                 startGame(3);
                 break;
             case GAME:
+                score = 0;
                 newWord();
                 break;
         }
