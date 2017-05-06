@@ -7,22 +7,31 @@ import android.media.MediaPlayer;
  */
 
 public class Sound {
+    enum Type {
+        FILE, TTS;
+    }
     public static final String WELCOME = "Welcome";
 
-    private String name;
+    private Type type;
+    private String text;
     private MediaPlayer.OnCompletionListener listener;
 
-    public Sound(String name) {
-        this(name, null);
+    public Sound(Type type, String text) {
+        this(type, text, null);
     }
 
-    public Sound(String name, MediaPlayer.OnCompletionListener listener) {
-        this.name = name;
+    public Sound(Type type, String text, MediaPlayer.OnCompletionListener listener) {
+        this.type = type;
+        this.text = text;
         this.listener = listener;
     }
 
-    public String getName() {
-        return name;
+    public Type getType() {
+        return type;
+    }
+
+    public String getText() {
+        return text;
     }
 
     public MediaPlayer.OnCompletionListener getListener() {

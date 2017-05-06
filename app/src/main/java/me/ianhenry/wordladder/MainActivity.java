@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private final int PERMISSION_REQUEST_AUDIO = 26;
     private Intent wordIntent;
     private Boolean listening = false;
-    private TextToSpeech speaker;
     private WordDatabaseHelper wordDatabaseHelper;
     private Cursor resultCursor;
     private int score;
@@ -70,7 +69,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         }
         mediaPlayer = new WordLadderMediaPlayer(this);
 
-        initSpeaker();
         checkForPermissions();
 
 
@@ -96,7 +94,11 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     }
 
     public void playSound(String name, MediaPlayer.OnCompletionListener listener) {
-        mediaPlayer.play(new Sound(name, listener));
+        mediaPlayer.play(new Sound(Sound.Type.FILE, name, listener));
+    }
+
+    public void speak(String text) {
+        mediaPlayer.play(new Sound(Sound.Type.TTS, text));
     }
 
     private void newWord() {
@@ -163,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
                        @Override
                        public void onCompletion(MediaPlayer mediaPlayer) {
                            SharedPreferences sp = getSharedPreferences("prefs", Activity.MODE_PRIVATE);
-                           speak(sp.getInt("high_score", 0) + " points");
+                           //speak(sp.getInt("high_score", 0) + " points");
                        }
                    });
                    break;
@@ -287,26 +289,15 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     }
 
     private void speakPrompt(String word) {
-        String longWord = word.replace("", "... ");
-        speaker.speak(word + ": " + longWord, TextToSpeech.QUEUE_FLUSH, null, null);
+
     }
 
     private void speakScore() {
-        speaker.speak(score+"", TextToSpeech.QUEUE_FLUSH, null, null);
-    }
 
-    private void speak(String text) {
-        speaker.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
     private void initSpeaker() {
-        speaker = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                speaker.setLanguage(Locale.US);
-                speaker.setSpeechRate(0.70f);
-            }
-        });
+
     }
 
     private void initSpeechRecognizer() {

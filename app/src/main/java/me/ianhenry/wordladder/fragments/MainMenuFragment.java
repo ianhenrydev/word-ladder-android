@@ -37,7 +37,7 @@ public class MainMenuFragment extends WordLadderFragment {
         super.onActivityCreated(savedInstanceState);
 
         mainActivity.playSound("Welcome", null);
-        mainActivity.playSound("1stPlace", null);
+        mainActivity.speak("test");
     }
 
     @Override
