@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.media.MediaPlayer;
@@ -13,7 +12,6 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
-import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GestureDetectorCompat;
@@ -21,12 +19,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Locale;
 
 import me.ianhenry.wordladder.events.WordResultListener;
 import me.ianhenry.wordladder.fragments.MainMenuFragment;
