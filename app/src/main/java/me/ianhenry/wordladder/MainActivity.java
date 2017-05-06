@@ -14,7 +14,6 @@ import android.os.CountDownTimer;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GestureDetectorCompat;
@@ -30,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import me.ianhenry.wordladder.events.WordResultListener;
+import me.ianhenry.wordladder.fragments.MainMenuFragment;
+import me.ianhenry.wordladder.fragments.WordLadderFragment;
 
 public class MainActivity extends AppCompatActivity implements WordResultListener, GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
 
@@ -61,14 +62,27 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initSpeaker();
+        if (findViewById(R.id.fragment_container) != null) {
+
+            if (savedInstanceState != null) {
+                return;
+            }
+
+            WordLadderFragment firstFragment = new MainMenuFragment();
+            firstFragment.setArguments(getIntent().getExtras());
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, firstFragment).commit();
+
+            firstFragment.onDoubleTap();
+        }
+
+        /*initSpeaker();
         checkForPermissions();
 
 
         mDetector = new GestureDetectorCompat(this,this);
         mDetector.setOnDoubleTapListener(this);
 
-        layout = (RelativeLayout)findViewById(R.id.activity_main);
+        layout = (RelativeLayout)findViewById(R.id.fragment_main);
         textView = (TextView)findViewById(R.id.textView);
         debugText = (TextView)findViewById(R.id.debugText);
         scoreText = (TextView)findViewById(R.id.scoreText);
@@ -81,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         initDB();
         createMainMenu();
 
-        score = 0;
+        score = 0;*/
     }
 
     private enum Status {
