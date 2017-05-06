@@ -336,7 +336,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
-
+        mediaPlayer.stopAndCancel();
         if (!listening) {
             recognizer.startListening(wordIntent);
             listening = true;

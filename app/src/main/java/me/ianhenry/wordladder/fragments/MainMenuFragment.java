@@ -1,6 +1,8 @@
 package me.ianhenry.wordladder.fragments;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -37,7 +39,6 @@ public class MainMenuFragment extends WordLadderFragment {
         super.onActivityCreated(savedInstanceState);
 
         mainActivity.playSound("Welcome", null);
-        mainActivity.speak("test");
     }
 
     @Override
@@ -47,8 +48,12 @@ public class MainMenuFragment extends WordLadderFragment {
                 case PLAY:
                     break;
                 case TUTORIAL:
+                    mainActivity.playSound("Tutorial", null);
                     break;
                 case LEADERBOARD:
+                    mainActivity.playSound("1stPlace", null);
+                    SharedPreferences sp = getContext().getSharedPreferences("prefs", Activity.MODE_PRIVATE);
+                    mainActivity.speak(sp.getInt("high_score", 0) + " points");
                     break;
             }
         }

@@ -33,7 +33,7 @@ public class WordLadderMediaPlayer implements MediaPlayer.OnCompletionListener, 
     @Override
     public void onInit(int status) {
         textToSpeech.setLanguage(Locale.US);
-        textToSpeech.setSpeechRate(0.70f);
+        textToSpeech.setSpeechRate(1f);
         ready = true;
         if (!mediaPlayer.isPlaying() && !textToSpeech.isSpeaking() && soundQueue.size() > 0) {
             play(soundQueue.remove());
@@ -72,6 +72,18 @@ public class WordLadderMediaPlayer implements MediaPlayer.OnCompletionListener, 
 
     private void speakText() {
         textToSpeech.speak(currentSound.getText(), TextToSpeech.QUEUE_FLUSH, null, null);
+    }
+
+    public void stopAndCancel() {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+        }
+        if (textToSpeech.isSpeaking()) {
+            textToSpeech.stop();
+        }
+        while (soundQueue.size() > 0) {
+            soundQueue.remove();
+        }
     }
 
     @Override
