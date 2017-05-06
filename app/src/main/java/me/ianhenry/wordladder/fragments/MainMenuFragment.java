@@ -46,6 +46,7 @@ public class MainMenuFragment extends WordLadderFragment {
         for (String result : results) {
             switch (result.toUpperCase()) {
                 case PLAY:
+                    mainActivity.startGame();
                     break;
                 case TUTORIAL:
                     mainActivity.playSound("Tutorial", null);

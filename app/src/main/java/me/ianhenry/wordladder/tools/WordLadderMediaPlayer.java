@@ -54,6 +54,9 @@ public class WordLadderMediaPlayer implements MediaPlayer.OnCompletionListener, 
                 case TTS:
                     speakText();
                     break;
+                case TTS_PROMPT:
+                    speakPrompt();
+                    break;
             }
         }
     }
@@ -74,6 +77,15 @@ public class WordLadderMediaPlayer implements MediaPlayer.OnCompletionListener, 
 
     private void speakText() {
         textToSpeech.speak(currentSound.getText(), TextToSpeech.QUEUE_FLUSH, null, null);
+    }
+
+    private void speakPrompt() {
+        String word = currentSound.getText();
+        textToSpeech.speak(word.toLowerCase(), TextToSpeech.QUEUE_ADD, null, null);
+        for (int i = 0; i < word.length(); i ++) {
+            textToSpeech.playSilentUtterance(100, TextToSpeech.QUEUE_ADD, null);
+            textToSpeech.speak(word.charAt(i)+"", TextToSpeech.QUEUE_ADD, null, null);
+        }
     }
 
     public void stopAndCancel() {

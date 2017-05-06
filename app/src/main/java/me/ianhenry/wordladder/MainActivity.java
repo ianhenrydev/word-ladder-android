@@ -2,6 +2,7 @@ package me.ianhenry.wordladder;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import me.ianhenry.wordladder.events.WordResultListener;
+import me.ianhenry.wordladder.fragments.GameFragment;
 import me.ianhenry.wordladder.fragments.MainMenuFragment;
 import me.ianhenry.wordladder.fragments.WordLadderFragment;
 import me.ianhenry.wordladder.models.Sound;
@@ -37,16 +39,13 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private final int PERMISSION_REQUEST_AUDIO = 26;
     private Intent wordIntent;
     private Boolean listening = false;
-    private WordDatabaseHelper wordDatabaseHelper;
     private Cursor resultCursor;
     private int score;
-    private ArrayList<String> solutions;
     private GestureDetectorCompat mDetector;
     private Status STATUS;
     private int difficulty;
     private String correctWord;
     private CountDownTimer countDownTimer;
-    private ArrayList<String> alreadyAnswered;
     private boolean endGame = false;
     private WordLadderFragment currentFragment;
     private WordLadderMediaPlayer mediaPlayer;
@@ -74,12 +73,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         mDetector = new GestureDetectorCompat(this,this);
         mDetector.setOnDoubleTapListener(this);
 
-        alreadyAnswered = new ArrayList<>();
-
-
-        initDB();
-        //createMainMenu();
-
         score = 0;
     }
 
@@ -87,9 +80,9 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         MAIN_MENU, DIFFICULTY, GAME
     }
 
-    private void createMainMenu() {
-        STATUS = Status.MAIN_MENU;
-        playSound("Welcome", null);
+    public void startGame() {
+        currentFragment = new GameFragment();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, currentFragment).commit();
     }
 
     public void playSound(String name, MediaPlayer.OnCompletionListener listener) {
@@ -100,46 +93,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         mediaPlayer.play(new Sound(Sound.Type.TTS, text));
     }
 
-    private void newWord() {
-        Cursor randoCursor = wordDatabaseHelper.getRandoWord(difficulty);
-        randoCursor.moveToFirst();
-        String randoWord = randoCursor.getString(0);
-        getSolutions(randoWord);
-        speakPrompt(randoWord);
-        alreadyAnswered.add(randoWord.toUpperCase());
-    }
 
-    private void initDB() {
-        wordDatabaseHelper = new WordDatabaseHelper(this);
-        try {
-
-            wordDatabaseHelper.createDataBase();
-
-        } catch (IOException ioe) {
-
-            throw new Error("Unable to create database");
-
-        }
-
-        try {
-
-            wordDatabaseHelper.openDataBase();
-
-        } catch (SQLException sqle) {
-
-            throw sqle;
-
-        }
-    }
-
-    private void getSolutions(String word) {
-        solutions = new ArrayList<>();
-        resultCursor = wordDatabaseHelper.getSolutions(word);
-        Log.d("Num results", resultCursor.getCount()+"");
-        while (resultCursor.moveToNext()) {
-            solutions.add(resultCursor.getString(0));
-        }
-    }
 
     private void increaseScore() {
         score++;
@@ -224,7 +178,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private MediaPlayer.OnCompletionListener yourWordIsCompletion = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(final MediaPlayer mediaPlayer) {
-            newWord();
             /*countDownTimer = new CountDownTimer(60000, 1000) {
                 @Override
                 public void onTick(long millisUntilFinished) {
@@ -249,28 +202,7 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     };
 
     private void gameWordResult(String[] words) {
-        String debug = "";
-        boolean correct = false;
-        outerloop:
-        for (String word : words) {
-            debug += word + ",";
-            for (String solution : solutions) {
-                if (word.toUpperCase().equals(solution.toUpperCase())) {
-                    if (!alreadyAnswered.contains(word.toUpperCase())) {
-                        alreadyAnswered.add(word.toUpperCase());
-                        Log.d("Correct", word);
-                        playSound("Correct", correctCompletion);
-                        correct = true;
-                        correctWord = word;
-                        increaseScore();
-                        getSolutions(word);
-                        break outerloop;
-                    }
-                }
-            }
-        }
-        if (!correct)
-            playSound("Incorrect", null);
+
         listening = false;
     }
 
@@ -287,8 +219,8 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         listening = false;
     }
 
-    private void speakPrompt(String word) {
-
+    public void speakPrompt(String word) {
+        mediaPlayer.play(new Sound(Sound.Type.TTS_PROMPT, word, null));
     }
 
     private void speakScore() {
@@ -336,10 +268,8 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     @Override
     public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
         mediaPlayer.stopAndCancel();
-        if (!listening) {
-            recognizer.startListening(wordIntent);
-            listening = true;
-        }
+        recognizer.startListening(wordIntent);
+
         return false;
     }
 
@@ -351,7 +281,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
                 break;
             case GAME:
                 score = 0;
-                newWord();
                 break;
         }
         return false;

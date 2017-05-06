@@ -8,7 +8,7 @@ import android.media.MediaPlayer;
 
 public class Sound {
     public enum Type {
-        FILE, TTS;
+        FILE, TTS, TTS_PROMPT;
     }
     public static final String WELCOME = "Welcome";
 
