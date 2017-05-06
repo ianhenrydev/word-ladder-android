@@ -1,4 +1,4 @@
-package me.ianhenry.wordladder;
+package me.ianhenry.wordladder.tools;
 
 import android.os.Bundle;
 import android.speech.RecognitionListener;

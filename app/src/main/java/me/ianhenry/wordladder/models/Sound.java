@@ -1,4 +1,4 @@
-package me.ianhenry.wordladder;
+package me.ianhenry.wordladder.models;
 
 import android.media.MediaPlayer;
 
@@ -7,7 +7,7 @@ import android.media.MediaPlayer;
  */
 
 public class Sound {
-    enum Type {
+    public enum Type {
         FILE, TTS;
     }
     public static final String WELCOME = "Welcome";

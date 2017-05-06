@@ -1,4 +1,4 @@
-package me.ianhenry.wordladder;
+package me.ianhenry.wordladder.tools;
 
 /**
  * Created by ianhenry on 4/18/17.

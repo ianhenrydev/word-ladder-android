@@ -26,6 +26,10 @@ import java.util.ArrayList;
 import me.ianhenry.wordladder.events.WordResultListener;
 import me.ianhenry.wordladder.fragments.MainMenuFragment;
 import me.ianhenry.wordladder.fragments.WordLadderFragment;
+import me.ianhenry.wordladder.models.Sound;
+import me.ianhenry.wordladder.tools.WordDatabaseHelper;
+import me.ianhenry.wordladder.tools.WordLadderMediaPlayer;
+import me.ianhenry.wordladder.tools.WordListener;
 
 public class MainActivity extends AppCompatActivity implements WordResultListener, GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
 

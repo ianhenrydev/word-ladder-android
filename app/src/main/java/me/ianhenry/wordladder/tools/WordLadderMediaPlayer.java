@@ -1,4 +1,4 @@
-package me.ianhenry.wordladder;
+package me.ianhenry.wordladder.tools;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -8,6 +8,8 @@ import android.speech.tts.TextToSpeech;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Locale;
+
+import me.ianhenry.wordladder.models.Sound;
 
 /**
  * Created by ianhe on 5/6/2017.
