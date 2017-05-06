@@ -37,11 +37,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private SpeechRecognizer recognizer;
     private final int PERMISSION_REQUEST_AUDIO = 26;
     private Intent wordIntent;
-    private TextView textView;
-    private TextView debugText;
-    private TextView scoreText;
-    private TextView timeText;
-    private RelativeLayout layout;
     private Boolean listening = false;
     private TextToSpeech speaker;
     private WordDatabaseHelper wordDatabaseHelper;
@@ -49,13 +44,14 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     private int score;
     private ArrayList<String> solutions;
     private GestureDetectorCompat mDetector;
-    private MediaPlayer mediaPlayer;
     private Status STATUS;
     private int difficulty;
     private String correctWord;
     private CountDownTimer countDownTimer;
     private ArrayList<String> alreadyAnswered;
     private boolean endGame = false;
+    private WordLadderFragment currentFragment;
+    private WordLadderMediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,34 +64,26 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
                 return;
             }
 
-            WordLadderFragment firstFragment = new MainMenuFragment();
-            firstFragment.setArguments(getIntent().getExtras());
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, firstFragment).commit();
-
-            firstFragment.onDoubleTap();
+            currentFragment = new MainMenuFragment();
+            currentFragment.setArguments(getIntent().getExtras());
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, currentFragment).commit();
         }
+        mediaPlayer = new WordLadderMediaPlayer(this);
 
-        /*initSpeaker();
+        initSpeaker();
         checkForPermissions();
 
 
         mDetector = new GestureDetectorCompat(this,this);
         mDetector.setOnDoubleTapListener(this);
 
-        layout = (RelativeLayout)findViewById(R.id.fragment_main);
-        textView = (TextView)findViewById(R.id.textView);
-        debugText = (TextView)findViewById(R.id.debugText);
-        scoreText = (TextView)findViewById(R.id.scoreText);
-        timeText = (TextView)findViewById(R.id.timeText);
-        textView.setText("Main Menu\n\nPlay\n\nTutorial\n\nLeaderboard");
-
         alreadyAnswered = new ArrayList<>();
 
 
         initDB();
-        createMainMenu();
+        //createMainMenu();
 
-        score = 0;*/
+        score = 0;
     }
 
     private enum Status {
@@ -107,26 +95,14 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         playSound("Welcome", null);
     }
 
-    private void playSound(String sound, MediaPlayer.OnCompletionListener listener) {
-        try {
-            AssetFileDescriptor descriptor = getAssets().openFd("sounds/"+sound+".mp3");
-            mediaPlayer = new  MediaPlayer();
-            mediaPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
-            descriptor.close();
-            mediaPlayer.prepare();
-            if (listener != null)
-                mediaPlayer.setOnCompletionListener(listener);
-            mediaPlayer.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void playSound(String name, MediaPlayer.OnCompletionListener listener) {
+        mediaPlayer.play(new Sound(name, listener));
     }
 
     private void newWord() {
         Cursor randoCursor = wordDatabaseHelper.getRandoWord(difficulty);
         randoCursor.moveToFirst();
         String randoWord = randoCursor.getString(0);
-        textView.setText(randoWord.toUpperCase());
         getSolutions(randoWord);
         speakPrompt(randoWord);
         alreadyAnswered.add(randoWord.toUpperCase());
@@ -166,29 +142,17 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
     private void increaseScore() {
         score++;
-        scoreText.setText(""+score);
     }
 
     @Override
     public void onWordResult(String[] words) {
-        switch (STATUS) {
-            case MAIN_MENU:
-                menuWordResult(words);
-                break;
-            case DIFFICULTY:
-                difficultyWordResult(words);
-                break;
-            case GAME:
-                gameWordResult(words);
-                break;
-        }
+        currentFragment.onSpeechResult(words);
     }
     private void menuWordResult(String[] words) {
         for (String word : words) {
            switch (word.toUpperCase()) {
                case "PLAY":
                    playSound("SelectDifficulty", null);
-                   textView.setText("Select Difficulty\n\nEasy\n\nMedium\n\nHard");
                    STATUS = Status.DIFFICULTY;
                    break;
                case "TUTORIAL":
@@ -226,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
 
     private void startGame(int diff) {
         difficulty = diff;
-        textView.setText("");
         playSound("YourFirstWord", yourWordIsCompletion);
         STATUS = Status.GAME;
     }
@@ -251,10 +214,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
                 public void onFinish() {
                     STATUS = Status.MAIN_MENU;
                     score = 0;
-                    textView.setText("Main Menu\n\nPlay\n\nTutorial\n\nLeaderboard");
-                    scoreText.setText("");
-                    timeText.setText("");
-                    debugText.setText("");
                     playSound("Welcome", null);
                 }
             }.start();
@@ -303,7 +262,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
                         correct = true;
                         correctWord = word;
                         increaseScore();
-                        textView.setText(word.toUpperCase());
                         getSolutions(word);
                         break outerloop;
                     }
@@ -312,7 +270,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         }
         if (!correct)
             playSound("Incorrect", null);
-        debugText.setText(debug);
         listening = false;
     }
 
@@ -326,7 +283,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     @Override
     public void onError() {
         playSound("PleaseRepeat", null);
-        debugText.setText("error");
         listening = false;
     }
 
@@ -365,19 +321,8 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     }
 
     private void checkForPermissions() {
-        // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-
-            // Should we show an explanation?
-            //if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            //} else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_AUDIO);
-            //}
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST_AUDIO);
         } else {
             initSpeechRecognizer();
         }
@@ -387,7 +332,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_REQUEST_AUDIO: {
-                // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     initSpeechRecognizer();
                 } else {
@@ -403,8 +347,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
 
         if (!listening) {
-            if (mediaPlayer.isPlaying())
-                mediaPlayer.stop();
             recognizer.startListening(wordIntent);
             listening = true;
         }
@@ -415,8 +357,6 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
     public boolean onDoubleTap(MotionEvent motionEvent) {
         switch (STATUS) {
             case MAIN_MENU:
-                if (mediaPlayer.isPlaying())
-                    mediaPlayer.stop();
                 startGame(3);
                 break;
             case GAME:
