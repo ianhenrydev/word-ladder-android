@@ -29,10 +29,10 @@ public class GameFragment extends WordLadderFragment {
     private ArrayList<String> alreadyAnswered;
     private ArrayList<String> solutions;
     private int score = 0;
-    private String correctWord;
     private TextView promptText;
     private TextView timeText;
     private TextView scoreText;
+    private String currentWord;
 
     @Override
     public void onAttach(Context context) {
@@ -93,6 +93,7 @@ public class GameFragment extends WordLadderFragment {
         getSolutions(randoWord);
         mainActivity.speakPrompt(randoWord);
         alreadyAnswered.add(randoWord.toUpperCase());
+        currentWord = randoWord;
     }
 
     private void getSolutions(String word) {
@@ -118,7 +119,7 @@ public class GameFragment extends WordLadderFragment {
                         promptText.setText(result.toUpperCase());
                         mainActivity.playSound("Correct", null);
                         correct = true;
-                        correctWord = result;
+                        currentWord = result;
                         increaseScore();
                         getSolutions(result);
                         break outerloop;
@@ -137,6 +138,6 @@ public class GameFragment extends WordLadderFragment {
 
     @Override
     public void onDoubleTap() {
-
+        mainActivity.speakPrompt(currentWord);
     }
 }
