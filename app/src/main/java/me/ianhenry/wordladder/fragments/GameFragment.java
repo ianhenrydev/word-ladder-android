@@ -1,6 +1,8 @@
 package me.ianhenry.wordladder.fragments;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.os.Bundle;
@@ -34,7 +36,7 @@ public class GameFragment extends WordLadderFragment {
     private TextView scoreText;
     private TextView previousText;
     private String currentWord;
-    private int gameTime = 30;
+    private int gameTime = 60;
     private int difficulty;
 
     @Override
@@ -92,7 +94,12 @@ public class GameFragment extends WordLadderFragment {
         @Override
         public void onFinish() {
             mainActivity.playSound("GameOver", null);
+            SharedPreferences sp = getContext().getSharedPreferences("prefs", Activity.MODE_PRIVATE);
             mainActivity.speak(score + " points");
+            if (score > sp.getInt("high_score", 0)) {
+                sp.edit().putInt("high_score", score).apply();
+                mainActivity.playSound("MadeLeaderboard", null);
+            }
             mainActivity.returnToMenu();
         }
     };
