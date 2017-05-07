@@ -34,6 +34,7 @@ public class GameFragment extends WordLadderFragment {
     private TextView scoreText;
     private TextView previousText;
     private String currentWord;
+    private int gameTime = 30;
 
     @Override
     public void onAttach(Context context) {
@@ -59,6 +60,7 @@ public class GameFragment extends WordLadderFragment {
         mainActivity.playSound("YourFirstWord", null);
         alreadyAnswered = new ArrayList<>();
         newWord();
+        gameTimer.start();
     }
 
     private void initDB() {
@@ -75,15 +77,17 @@ public class GameFragment extends WordLadderFragment {
         }
     }
 
-    private CountDownTimer gameTimer = new CountDownTimer(60000, 1000) {
+    private CountDownTimer gameTimer = new CountDownTimer(gameTime * 1000, 1000) {
         @Override
         public void onTick(long millisUntilFinished) {
-
+            timeText.setText((millisUntilFinished / 1000) + "");
         }
 
         @Override
         public void onFinish() {
-
+            mainActivity.playSound("GameOver", null);
+            mainActivity.speak(score + " points");
+            mainActivity.returnToMenu();
         }
     };
 

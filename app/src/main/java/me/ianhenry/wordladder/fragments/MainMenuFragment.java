@@ -49,7 +49,7 @@ public class MainMenuFragment extends WordLadderFragment {
                     mainActivity.startGame();
                     break;
                 case TUTORIAL:
-                    mainActivity.playSound("Tutorial", null);
+                    mainActivity.playSound("TutorialReadOut", null);
                     break;
                 case LEADERBOARD:
                     mainActivity.playSound("1stPlace", null);
