@@ -64,6 +64,10 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, currentFragment).commit();
     }
 
+    public void playBackgroundSound(String name) {
+        mediaPlayer.playBackground(name);
+    }
+
     public void playSound(String name, MediaPlayer.OnCompletionListener listener) {
         mediaPlayer.play(new Sound(Sound.Type.FILE, name, listener));
     }

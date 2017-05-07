@@ -81,6 +81,9 @@ public class GameFragment extends WordLadderFragment {
         @Override
         public void onTick(long millisUntilFinished) {
             timeText.setText((millisUntilFinished / 1000) + "");
+            if (millisUntilFinished <= 10000) {
+                mainActivity.playBackgroundSound("tick");
+            }
         }
 
         @Override

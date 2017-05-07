@@ -18,6 +18,7 @@ import me.ianhenry.wordladder.models.Sound;
 public class WordLadderMediaPlayer implements MediaPlayer.OnCompletionListener, TextToSpeech.OnInitListener {
 
     private MediaPlayer mediaPlayer;
+    private MediaPlayer backgroundMediaPlayer;
     private Context context;
     private LinkedList<Sound> soundQueue;
     private Sound currentSound;
@@ -58,6 +59,19 @@ public class WordLadderMediaPlayer implements MediaPlayer.OnCompletionListener, 
                     speakPrompt();
                     break;
             }
+        }
+    }
+
+    public void playBackground(String name) {
+        try {
+            AssetFileDescriptor descriptor = context.getAssets().openFd("sounds/" + name + ".mp3");
+            backgroundMediaPlayer = new MediaPlayer();
+            backgroundMediaPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
+            descriptor.close();
+            backgroundMediaPlayer.prepare();
+            backgroundMediaPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
