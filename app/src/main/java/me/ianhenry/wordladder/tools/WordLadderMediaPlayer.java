@@ -4,8 +4,11 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
+import android.util.Log;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 
@@ -15,7 +18,7 @@ import me.ianhenry.wordladder.models.Sound;
  * Created by ianhe on 5/6/2017.
  */
 
-public class WordLadderMediaPlayer implements MediaPlayer.OnCompletionListener, TextToSpeech.OnInitListener {
+public class WordLadderMediaPlayer extends UtteranceProgressListener implements MediaPlayer.OnCompletionListener, TextToSpeech.OnInitListener {
 
     private MediaPlayer mediaPlayer;
     private MediaPlayer backgroundMediaPlayer;
@@ -37,6 +40,7 @@ public class WordLadderMediaPlayer implements MediaPlayer.OnCompletionListener, 
     public void onInit(int status) {
         textToSpeech.setLanguage(Locale.US);
         textToSpeech.setSpeechRate(1f);
+        textToSpeech.setOnUtteranceProgressListener(this);
         ready = true;
         if (!mediaPlayer.isPlaying() && !textToSpeech.isSpeaking() && soundQueue.size() > 0) {
             play(soundQueue.remove());
@@ -90,7 +94,9 @@ public class WordLadderMediaPlayer implements MediaPlayer.OnCompletionListener, 
     }
 
     private void speakText() {
-        textToSpeech.speak(currentSound.getText(), TextToSpeech.QUEUE_FLUSH, null, null);
+        HashMap<String, String> map = new HashMap<>();
+        map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,"messageID");
+        textToSpeech.speak(currentSound.getText(), TextToSpeech.QUEUE_FLUSH, map);
     }
 
     private void speakPrompt() {
@@ -122,5 +128,22 @@ public class WordLadderMediaPlayer implements MediaPlayer.OnCompletionListener, 
         if (soundQueue.size() > 0) {
             play(soundQueue.remove());
         }
+    }
+
+    @Override
+    public void onStart(String utteranceId) {
+        Log.d("Utterance", "onStart");
+    }
+
+    @Override
+    public void onDone(String utteranceId) {
+        if (soundQueue.size() > 0) {
+            play(soundQueue.remove());
+        }
+    }
+
+    @Override
+    public void onError(String utteranceId) {
+        Log.d("Utterance", "onError");
     }
 }
