@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,8 +28,11 @@ public class GameFragment extends WordLadderFragment {
     private WordDatabaseHelper wordDatabaseHelper;
     private ArrayList<String> alreadyAnswered;
     private ArrayList<String> solutions;
-    private int score;
+    private int score = 0;
     private String correctWord;
+    private TextView promptText;
+    private TextView timeText;
+    private TextView scoreText;
 
     @Override
     public void onAttach(Context context) {
@@ -44,6 +48,10 @@ public class GameFragment extends WordLadderFragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        promptText = (TextView) getView().findViewById(R.id.prompt);
+        timeText = (TextView) getView().findViewById(R.id.time);
+        scoreText = (TextView) getView().findViewById(R.id.score);
 
         initDB();
         mainActivity.playSound("YourFirstWord", null);
@@ -81,6 +89,7 @@ public class GameFragment extends WordLadderFragment {
         Cursor randoCursor = wordDatabaseHelper.getRandoWord(3);
         randoCursor.moveToFirst();
         String randoWord = randoCursor.getString(0);
+        promptText.setText(randoWord.toUpperCase());
         getSolutions(randoWord);
         mainActivity.speakPrompt(randoWord);
         alreadyAnswered.add(randoWord.toUpperCase());
@@ -106,10 +115,11 @@ public class GameFragment extends WordLadderFragment {
                     if (!alreadyAnswered.contains(result.toUpperCase())) {
                         alreadyAnswered.add(result.toUpperCase());
                         Log.d("Correct", result);
+                        promptText.setText(result.toUpperCase());
                         mainActivity.playSound("Correct", null);
                         correct = true;
                         correctWord = result;
-                        //increaseScore();
+                        increaseScore();
                         getSolutions(result);
                         break outerloop;
                     }
@@ -118,6 +128,11 @@ public class GameFragment extends WordLadderFragment {
         }
         if (!correct)
             mainActivity.playSound("Incorrect", null);
+    }
+
+    private void increaseScore() {
+        score++;
+        scoreText.setText(score+"");
     }
 
     @Override
