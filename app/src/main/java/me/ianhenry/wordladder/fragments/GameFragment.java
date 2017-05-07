@@ -32,6 +32,7 @@ public class GameFragment extends WordLadderFragment {
     private TextView promptText;
     private TextView timeText;
     private TextView scoreText;
+    private TextView previousText;
     private String currentWord;
 
     @Override
@@ -52,6 +53,7 @@ public class GameFragment extends WordLadderFragment {
         promptText = (TextView) getView().findViewById(R.id.prompt);
         timeText = (TextView) getView().findViewById(R.id.time);
         scoreText = (TextView) getView().findViewById(R.id.score);
+        previousText = (TextView) getView().findViewById(R.id.previous);
 
         initDB();
         mainActivity.playSound("YourFirstWord", null);
@@ -119,6 +121,7 @@ public class GameFragment extends WordLadderFragment {
                         promptText.setText(result.toUpperCase());
                         mainActivity.playSound("Correct", null);
                         correct = true;
+                        previousText.setText(currentWord.toUpperCase() + "\n" + previousText.getText());
                         currentWord = result;
                         increaseScore();
                         getSolutions(result);
