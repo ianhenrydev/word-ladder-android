@@ -35,6 +35,7 @@ public class GameFragment extends WordLadderFragment {
     private TextView previousText;
     private String currentWord;
     private int gameTime = 30;
+    private int difficulty;
 
     @Override
     public void onAttach(Context context) {
@@ -55,6 +56,8 @@ public class GameFragment extends WordLadderFragment {
         timeText = (TextView) getView().findViewById(R.id.time);
         scoreText = (TextView) getView().findViewById(R.id.score);
         previousText = (TextView) getView().findViewById(R.id.previous);
+
+        difficulty = getArguments().getInt("difficulty", 3);
 
         initDB();
         mainActivity.playSound("YourFirstWord", null);
@@ -95,7 +98,7 @@ public class GameFragment extends WordLadderFragment {
     };
 
     private void newWord() {
-        Cursor randoCursor = wordDatabaseHelper.getRandoWord(3);
+        Cursor randoCursor = wordDatabaseHelper.getRandoWord(difficulty);
         randoCursor.moveToFirst();
         String randoWord = randoCursor.getString(0);
         promptText.setText(randoWord.toUpperCase());
@@ -115,11 +118,9 @@ public class GameFragment extends WordLadderFragment {
 
     @Override
     public void onSpeechResult(String[] results) {
-        String debug = "";
         boolean correct = false;
         outerloop:
         for (String result : results) {
-            debug += result + ",";
             for (String solution : solutions) {
                 if (result.toUpperCase().equals(solution.toUpperCase())) {
                     if (!alreadyAnswered.contains(result.toUpperCase())) {

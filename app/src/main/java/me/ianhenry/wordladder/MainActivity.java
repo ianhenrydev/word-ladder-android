@@ -17,6 +17,7 @@ import android.view.MotionEvent;
 import me.ianhenry.wordladder.events.WordResultListener;
 import me.ianhenry.wordladder.fragments.GameFragment;
 import me.ianhenry.wordladder.fragments.MainMenuFragment;
+import me.ianhenry.wordladder.fragments.ModeSelectFragment;
 import me.ianhenry.wordladder.fragments.WordLadderFragment;
 import me.ianhenry.wordladder.models.Sound;
 import me.ianhenry.wordladder.tools.WordLadderMediaPlayer;
@@ -54,8 +55,16 @@ public class MainActivity extends AppCompatActivity implements WordResultListene
         mDetector.setOnDoubleTapListener(this);
     }
 
-    public void startGame() {
+    public void startGame(int difficulty) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("difficulty", difficulty);
         currentFragment = new GameFragment();
+        currentFragment.setArguments(bundle);
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, currentFragment).commit();
+    }
+
+    public void chooseMode() {
+        currentFragment = new ModeSelectFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, currentFragment).commit();
     }
 

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,13 +13,10 @@ import me.ianhenry.wordladder.MainActivity;
 import me.ianhenry.wordladder.R;
 
 /**
- * Created by ianhe on 5/6/2017.
+ * Created by ianhe on 5/7/2017.
  */
 
-public class MainMenuFragment extends WordLadderFragment {
-    private static final String PLAY = "PLAY";
-    private static final String LEADERBOARD = "LEADERBOARD";
-    private static final String TUTORIAL = "TUTORIAL";
+public class ModeSelectFragment extends WordLadderFragment {
 
     private MainActivity mainActivity;
     @Override
@@ -31,30 +27,28 @@ public class MainMenuFragment extends WordLadderFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_main, container, false);
+        return inflater.inflate(R.layout.fragment_mode, container, false);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mainActivity.playSound("Welcome", null);
+        mainActivity.playSound("SelectDifficulty", null);
     }
 
     @Override
     public void onSpeechResult(String[] results) {
         for (String result : results) {
             switch (result.toUpperCase()) {
-                case PLAY:
-                    mainActivity.chooseMode();
+                case "EASY":
+                    mainActivity.startGame(3);
                     break;
-                case TUTORIAL:
-                    mainActivity.playSound("TutorialReadOut", null);
+                case "MEDIUM":
+                    mainActivity.startGame(4);
                     break;
-                case LEADERBOARD:
-                    mainActivity.playSound("1stPlace", null);
-                    SharedPreferences sp = getContext().getSharedPreferences("prefs", Activity.MODE_PRIVATE);
-                    mainActivity.speak(sp.getInt("high_score", 0) + " points");
+                case "HARD":
+                    mainActivity.startGame(5);
                     break;
             }
         }
@@ -62,6 +56,6 @@ public class MainMenuFragment extends WordLadderFragment {
 
     @Override
     public void onDoubleTap() {
-        mainActivity.playSound("Welcome", null);
+        mainActivity.playSound("SelectDifficulty", null);
     }
 }
