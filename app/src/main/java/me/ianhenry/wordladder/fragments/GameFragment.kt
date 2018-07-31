@@ -59,8 +59,8 @@ class GameFragment : WordLadderFragment() {
     }
 
     override fun onAttach(context: Context?) {
-        mainActivity = context as MainActivity?
         super.onAttach(context)
+        mainActivity = context as MainActivity?
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
