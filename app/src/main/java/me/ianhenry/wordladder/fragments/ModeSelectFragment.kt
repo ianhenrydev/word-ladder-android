@@ -30,7 +30,7 @@ class ModeSelectFragment : WordLadderFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        mainActivity!!.playSound("SelectDifficulty", null)
+        mainActivity!!.playSound("difficulty", null)
     }
 
     override fun onSpeechResult(results: Array<String>) {
@@ -44,6 +44,6 @@ class ModeSelectFragment : WordLadderFragment() {
     }
 
     override fun onDoubleTap() {
-        mainActivity!!.playSound("SelectDifficulty", null)
+        mainActivity!!.playSound("difficulty", null)
     }
 }

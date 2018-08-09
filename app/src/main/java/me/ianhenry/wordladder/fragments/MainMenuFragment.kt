@@ -31,16 +31,16 @@ class MainMenuFragment : WordLadderFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        mainActivity!!.playSound("Welcome", null)
+        mainActivity!!.playSound("welcome", null)
     }
 
     override fun onSpeechResult(results: Array<String>) {
         for (result in results) {
             when (result.toUpperCase()) {
                 PLAY -> mainActivity!!.chooseMode()
-                TUTORIAL -> mainActivity!!.playSound("TutorialReadOut", null)
+                TUTORIAL -> mainActivity!!.playSound("tutorial", null)
                 LEADERBOARD -> {
-                    mainActivity!!.playSound("1stPlace", null)
+                    mainActivity!!.playSound("yourhsis", null)
                     val sp = getContext()!!.getSharedPreferences("prefs", Activity.MODE_PRIVATE)
                     mainActivity!!.speak(sp.getInt("high_score", 0).toString() + " points")
                 }
@@ -49,7 +49,7 @@ class MainMenuFragment : WordLadderFragment() {
     }
 
     override fun onDoubleTap() {
-        mainActivity!!.playSound("Welcome", null)
+        mainActivity!!.playSound("welcome", null)
     }
 
     companion object {

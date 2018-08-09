@@ -41,18 +41,16 @@ class GameFragment : WordLadderFragment() {
     private val gameTimer = object : CountDownTimer((gameTime * 1000).toLong(), 1000) {
         override fun onTick(millisUntilFinished: Long) {
             timeText!!.setText((millisUntilFinished / 1000).toString() + "")
-            if (millisUntilFinished <= 10000) {
-                mainActivity!!.playBackgroundSound("tick")
-            }
         }
 
         override fun onFinish() {
-            mainActivity!!.playSound("GameOver", null)
+            mainActivity!!.playSound("timesup", null)
+            mainActivity!!.playSound("greatjob", null)
             val sp = getContext()!!.getSharedPreferences("prefs", Activity.MODE_PRIVATE)
             mainActivity!!.speak(score.toString() + " points")
             if (score > sp.getInt("high_score", 0)) {
                 sp.edit().putInt("high_score", score).apply()
-                mainActivity!!.playSound("MadeLeaderboard", null)
+                mainActivity!!.playSound("newhs", null)
             }
             mainActivity!!.returnToMenu()
         }
@@ -78,7 +76,7 @@ class GameFragment : WordLadderFragment() {
         difficulty = getArguments()!!.getInt("difficulty", 3)
 
         initDB()
-        mainActivity!!.playSound("YourFirstWord", null)
+        mainActivity!!.playSound("wordis", null)
         alreadyAnswered = ArrayList()
         newWord()
         gameTimer.start()
@@ -128,7 +126,7 @@ class GameFragment : WordLadderFragment() {
                         alreadyAnswered!!.add(result.toUpperCase())
                         Log.d("Correct", result)
                         promptText!!.setText(result.toUpperCase())
-                        mainActivity!!.playSound("Correct", null)
+                        mainActivity!!.playSound("correct", null)
                         correct = true
                         previousText!!.setText(currentWord!!.toUpperCase() + "\n" + previousText!!.getText())
                         currentWord = result
@@ -140,7 +138,7 @@ class GameFragment : WordLadderFragment() {
             }
         }
         if (!correct)
-            mainActivity!!.playSound("Incorrect", null)
+            mainActivity!!.playSound("incorrect", null)
     }
 
     private fun increaseScore() {

@@ -59,7 +59,7 @@ class WordLadderMediaPlayer(private val context: Context) : UtteranceProgressLis
 
     fun playBackground(name: String) {
         try {
-            val descriptor = context.getAssets().openFd("sounds/$name.mp3")
+            val descriptor = context.getAssets().openFd("sounds/$name.wav")
             backgroundMediaPlayer = MediaPlayer()
             backgroundMediaPlayer!!.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength())
             descriptor.close()
@@ -73,7 +73,7 @@ class WordLadderMediaPlayer(private val context: Context) : UtteranceProgressLis
 
     private fun playFile() {
         try {
-            val descriptor = context.getAssets().openFd("sounds/" + currentSound!!.text + ".mp3")
+            val descriptor = context.getAssets().openFd("sounds/" + currentSound!!.text + ".wav")
             mediaPlayer = MediaPlayer()
             mediaPlayer!!.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength())
             descriptor.close()
@@ -95,10 +95,10 @@ class WordLadderMediaPlayer(private val context: Context) : UtteranceProgressLis
     private fun speakPrompt() {
         val word = currentSound!!.text
         textToSpeech.speak(word.toLowerCase(), TextToSpeech.QUEUE_ADD, null, null)
-        for (i in 0 until word.length) {
-            textToSpeech.playSilentUtterance(100, TextToSpeech.QUEUE_ADD, null)
+        /*for (i in 0 until word.length) {
+            textToSpeech.playSilentUtterance(50, TextToSpeech.QUEUE_ADD, null)
             textToSpeech.speak(word.get(i) + "", TextToSpeech.QUEUE_ADD, null, null)
-        }
+        }*/
     }
 
     fun stopAndCancel() {
